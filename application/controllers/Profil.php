@@ -13,7 +13,7 @@ class Profil extends CI_Controller
     public function index()
     {
         $data = [
-            'user' => $this->db->get_where('pengguna', ['email' => $this->session->userdata('email')])->row(),
+            'user' => $this->db->get_where('user', ['email' => $this->session->userdata('email')])->row(),
             'title' => 'Profil',
         ];
 
@@ -75,7 +75,7 @@ class Profil extends CI_Controller
 
                         $this->db->set('password', $password_hash);
                         $this->db->where('email', $this->session->userdata('email'));
-                        $this->db->update('pengguna');
+                        $this->db->update('user');
 
                         $isiPesan = '
                         <div class="alert alert-success alert-dismissible fade show border border-dark" role="alert">
@@ -92,7 +92,7 @@ class Profil extends CI_Controller
 
                     $upload_image = $_FILES['image']['name'];
                     $email = $this->session->userdata('email');
-                    $blabla = $this->db->get_where('pengguna', ['email' => $email])->row();
+                    $blabla = $this->db->get_where('user', ['email' => $email])->row();
 
                     if ($upload_image) {
 
@@ -134,7 +134,7 @@ class Profil extends CI_Controller
                     ];
 
                     $this->db->where('email', $this->session->userdata('email'));
-                    $this->db->update('pengguna', $dataUser);
+                    $this->db->update('user', $dataUser);
 
                     $isiPesan = '
                         <div class="alert alert-success alert-dismissible fade show border border-dark" role="alert">
@@ -150,7 +150,7 @@ class Profil extends CI_Controller
     public function aktivitas()
     {
         $data = [
-            'user' => $this->db->get_where('pengguna', ['email' => $this->session->userdata('email')])->row_array(),
+            'user' => $this->db->get_where('user', ['email' => $this->session->userdata('email')])->row_array(),
             'title' => 'Log Aktivitas Anda',
             'dp' => $this->db->order_by('time_act', 'DESC')->get_where('histori_aktivitas', ['email_act' => $this->session->userdata('email')])->result_array(),
         ];
@@ -165,7 +165,7 @@ class Profil extends CI_Controller
     public function pengumuman()
     {
         $data = [
-            'user' => $this->db->get_where('pengguna', ['email' => $this->session->userdata('email')])->row_array(),
+            'user' => $this->db->get_where('user', ['email' => $this->session->userdata('email')])->row_array(),
             'title' => 'Pengumuman',
             'pengumuman' => $this->db->order_by('dibuat', 'DESC')->get('pengumuman')->result_array(),
         ];

@@ -6,17 +6,16 @@ class UI extends CI_Controller
     public function __construct()
     {
         parent::__construct();
-        supreme();
+        check_user_access();
         date_default_timezone_set('Asia/Jakarta');
     }
 
     public function menu()
     {
         $data = [
-            'user' => $this->db->get_where('pengguna', ['email' => $this->session->userdata('email')])->row(),
-            'title' => 'Menu',
-            'crumb' => 'Interface',
-            'dataTab' => $this->db->order_by('order', 'ASC')->get('menu')->result()
+            'user' => $this->db->get_where('user', ['email' => $this->session->userdata('email')])->row(),
+            'title' => 'User Menu',
+            'dataTab' => $this->db->order_by('order', 'ASC')->get('user_menu')->result()
         ];
 
         $this->form_validation->set_rules('menu', 'Nama Menu', 'trim|required', [
@@ -61,10 +60,9 @@ class UI extends CI_Controller
     public function ubahMenu($id = '')
     {
         $data = [
-            'user' => $this->db->get_where('pengguna', ['email' => $this->session->userdata('email')])->row(),
-            'title' => 'Ubah Menu',
-            'crumb' => 'Interface',
-            'oneData' => $this->db->get_where('menu', ['id' => $id])->row(),
+            'user' => $this->db->get_where('user', ['email' => $this->session->userdata('email')])->row(),
+            'title' => 'Change User Menu',
+            'oneData' => $this->db->get_where('user_menu', ['id' => $id])->row(),
         ];
 
         $this->form_validation->set_rules('menu', 'Nama Menu', 'trim|required', [
@@ -109,10 +107,10 @@ class UI extends CI_Controller
 
     public function hapusMenu($id)
     {
-        $user = $this->db->get_where('pengguna', ['email' => $this->session->userdata('email')])->row();
-        $side = $this->db->get_where('menu', ['id' => $id])->row();
+        $user = $this->db->get_where('user', ['email' => $this->session->userdata('email')])->row();
+        $side = $this->db->get_where('user_menu', ['id' => $id])->row();
 
-        $this->db->delete('menu', ['id' => $id]);
+        $this->db->delete('user_menu', ['id_menu' => $id]);
 
         $this->session->set_flashdata('menu', '<div class="alert alert-warning mt-2">Menu <strong>' . $side->menu . ' </strong>berhasil dihapus!!</div>');
         redirect('ui/menu');
@@ -121,9 +119,8 @@ class UI extends CI_Controller
     public function submenu()
     {
         $data = [
-            'user' => $this->db->get_where('pengguna', ['email' => $this->session->userdata('email')])->row(),
+            'user' => $this->db->get_where('user', ['email' => $this->session->userdata('email')])->row(),
             'title' => 'Submenu',
-            'crumb' => 'Interface',
             'dataTab' => $this->db->select('submenu.id as id, submenu.*, menu.menu as menu')->join('menu', 'menu.id = submenu.menu_id', 'left')->get('submenu')->result(),
             'dataTabModal' => $this->db->get('menu')->result(),
         ];
@@ -169,7 +166,7 @@ class UI extends CI_Controller
     public function ubahSubmenu($id = '')
     {
         $data = [
-            'user' => $this->db->get_where('pengguna', ['email' => $this->session->userdata('email')])->row(),
+            'user' => $this->db->get_where('user', ['email' => $this->session->userdata('email')])->row(),
             'title' => 'Ubah Submenu',
             'crumb' => 'Interface',
             'oneData' => $this->db->select('submenu.id as id, submenu.*, menu.menu as menu')->join('menu', 'menu.id = submenu.menu_id', 'left')->get_where('submenu', ['submenu.id' => $id])->row(),
@@ -214,7 +211,7 @@ class UI extends CI_Controller
 
     public function hapusSubmenu($id)
     {
-        $user = $this->db->get_where('pengguna', ['email' => $this->session->userdata('email')])->row();
+        $user = $this->db->get_where('user', ['email' => $this->session->userdata('email')])->row();
         $side = $this->db->get_where('submenu', ['id' => $id])->row();
 
         $this->db->delete('submenu', ['id' => $id]);

@@ -6,32 +6,16 @@
                 <?php
 
                 if ($user->image == 'default') {
-                    if ($user->jenis_kelamin == 'L') {
-                        $fotoprofil = base_url('assets/img/user/default/') . 'L.jpg';
-                    } else {
-                        $fotoprofil = base_url('assets/img/user/default/') . 'P.jpg';
-                    }
+                    $fotoprofil = base_url('assets/img/user/default/') . 'P.jpg';
                 } else {
                     $fotoprofil = base_url('assets/img/user/') . $user->image;
-                }
-
-                if ($user->role == 1) {
-                    $namaRole = 'Admin';
-                } elseif ($user->role == 2) {
-                    $namaRole = 'Advokat';
-                } else {
-                    $namaRole = 'Klien';
                 }
                 ?>
                 <div class="card">
                     <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
 
                         <img src="<?= $fotoprofil ?>" alt="Profile" class="rounded-circle" width="100">
-                        <h2><?= $user->nama ?></h2>
-                        <h3><?= $namaRole ?></h3>
-                        <div class="social-links mt-2">
-                            <a target="_blank" href="https://wa.me/62<?= substr($user->no_hp, 1) ?>" class="twitter"><i class="bi bi-whatsapp"></i></a>
-                        </div>
+                        <h2><?= $user->name ?></h2>
                     </div>
                 </div>
 
@@ -64,45 +48,12 @@
 
                                 <div class="row my-3">
                                     <div class="col-lg-3 col-md-4 label ">Nama</div>
-                                    <div class="col-lg-9 col-md-8"><?= $user->nama ?></div>
+                                    <div class="col-lg-9 col-md-8"><?= $user->name ?></div>
                                 </div>
 
                                 <div class="row my-3">
                                     <div class="col-lg-3 col-md-4 label">Email</div>
                                     <div class="col-lg-9 col-md-8"><?= sumput($user->email) ?></div>
-                                </div>
-
-                                <div class="row my-3">
-                                    <div class="col-lg-3 col-md-4 label">No Handphone</div>
-                                    <div class="col-lg-9 col-md-8"><?= $user->no_hp ?></div>
-                                </div>
-
-                                <div class="row my-3">
-                                    <div class="col-lg-3 col-md-4 label">Jenis Kelamin</div>
-                                    <div class="col-lg-9 col-md-8">
-                                        <?php
-                                        if ($user->jenis_kelamin == 'L') {
-                                            echo "Laki-laki";
-                                        } else {
-                                            echo "Perempuan";
-                                        }
-                                        ?>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-lg-3 col-md-4 label">Role</div>
-                                    <div class="col-lg-9 col-md-8">
-                                        <?php
-                                        if ($user->role == 1) {
-                                            echo "Admin";
-                                        } elseif ($user->role == 2) {
-                                            echo "Advokat";
-                                        } else {
-                                            echo "Klien";
-                                        }
-                                        ?>
-                                    </div>
                                 </div>
 
                             </div>
@@ -128,10 +79,10 @@
                                     </div>
 
                                     <div class="row mb-3">
-                                        <label for="nama" class="col-md-4 col-lg-3 col-form-label">Nama</label>
+                                        <label for="name" class="col-md-4 col-lg-3 col-form-label">Nama</label>
                                         <div class="col-md-8 col-lg-9">
-                                            <input name="nama" type="text" class="form-control" id="nama" value="<?= $user->nama ?>">
-                                            <?= form_error('nama', '<small class="text-danger">', '</small>'); ?>
+                                            <input name="name" type="text" class="form-control" id="name" value="<?= $user->name ?>">
+                                            <?= form_error('name', '<small class="text-danger">', '</small>'); ?>
                                         </div>
                                     </div>
 
@@ -141,33 +92,6 @@
                                             <input type="email" class="form-control" id="email" value="<?= sumput($user->email) ?>" disabled>
                                         </div>
                                     </div>
-
-                                    <div class="row mb-3">
-                                        <label for="no_hp" class="col-md-4 col-lg-3 col-form-label">No Handphone</label>
-                                        <div class="col-md-8 col-lg-9">
-                                            <input name="no_hp" type="tel" class="form-control" id="no_hp" value="<?= $user->no_hp ?>">
-                                            <?= form_error('no_hp', '<small class="text-danger">', '</small>'); ?>
-                                        </div>
-                                    </div>
-
-                                    <div class="row mb-3">
-                                        <label for="jenis_kelamin" class="col-md-4 col-lg-3 col-form-label">Jenis Kelamin</label>
-                                        <div class="col-md-8 col-lg-9">
-                                            <select id="jenis_kelamin" class="form-select" name="jenis_kelamin">
-                                                <option value="<?= $user->jenis_kelamin ?>" hidden>
-                                                    <?php if ($user->jenis_kelamin == 'L') : ?>
-                                                        Laki-laki
-                                                    <?php else : ?>
-                                                        Perempuan
-                                                    <?php endif; ?>
-                                                </option>
-                                                <option value="L">Laki-laki</option>
-                                                <option value="P">Perempuan</option>
-                                            </select>
-                                            <?= form_error('jenis_kelamin', '<small class="text-danger">', '</small>'); ?>
-                                        </div>
-                                    </div>
-
 
                                     <div class="text-center">
                                         <input type="submit" name="submitProfil" class="btn btn-primary" value="Simpan Perubahan">

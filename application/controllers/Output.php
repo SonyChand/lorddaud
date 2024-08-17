@@ -9,7 +9,7 @@ class Output extends CI_Controller
     {
         parent::__construct();
         date_default_timezone_set('Asia/Jakarta');
-        super();
+        check_user_access();
         $this->load->library('pdfgenerator');
     }
 

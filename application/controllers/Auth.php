@@ -11,7 +11,7 @@ class Auth extends CI_Controller
 	public function index()
 	{
 		$data = [
-			'user' => $this->db->get_where('pengguna', ['email' => $this->session->userdata('email')])->row(),
+			'user' => $this->db->get_where('user', ['email' => $this->session->userdata('email')])->row(),
 			'title' => 'Halaman Login',
 		];
 
@@ -39,7 +39,7 @@ class Auth extends CI_Controller
 	public function forgotpassword()
 	{
 		$data = [
-			'user' => $this->db->get_where('pengguna', ['email' => $this->session->userdata('email')])->row(),
+			'user' => $this->db->get_where('user', ['email' => $this->session->userdata('email')])->row(),
 			'title' => 'Halaman Lupa Password',
 		];
 
@@ -58,7 +58,7 @@ class Auth extends CI_Controller
 		} else {
 			$email = $this->input->post('email', true);
 			$this->db->where('email', $email);
-			$query = $this->db->get('pengguna');
+			$query = $this->db->get('user');
 
 			if ($query->num_rows() > 0) {
 				$user = $query->row();
@@ -93,7 +93,7 @@ class Auth extends CI_Controller
 				if ($password == $confirm_password) {
 					// Update the user's password
 					$this->db->where('email', $user->email);
-					$this->db->update('pengguna', ['password' => password_hash($password, PASSWORD_DEFAULT)]);
+					$this->db->update('user', ['password' => password_hash($password, PASSWORD_DEFAULT)]);
 
 					// Remove the token
 					$this->db->where('email', $user->email);
@@ -219,29 +219,30 @@ a {
 
 		$email = $this->input->post('email', true);
 		$password = $this->input->post('password', true);
-		$user = $this->db->get_where('pengguna', ['email' => $email])->row_array();
+		$user = $this->db->get_where('user', ['email' => $email])->row();
 
 		// jika usernya ada
 		if ($user) {
 			// jika usernya aktif
-			if ($user['status'] == 1) {
+			if ($user->is_active == 'Active') {
 				// cek password
-				if (password_verify($password, $user['password'])) {
+				if (password_verify($password, $user->password)) {
 
 					$data = [
-						'nama' => $user['nama'],
-						'email' => $user['email'],
-						'role' => $user['role']
+						'name' => $user->name,
+						'email' => $user->email,
+						'role_id' => $user->role_id
 					];
 					$this->session->set_userdata($data);
 
 					$last_login = [
-						'terakhir_login' => time(),
+						'is_online' => 1,
+						'last_login' => time(),
 					];
 
 					$this->db->set($last_login);
 					$this->db->where('email', $this->session->userdata('email'));
-					$this->db->update('pengguna');
+					$this->db->update('user');
 				} else {
 					$this->session->set_flashdata('message', '<div class="alert alert-danger" role="alert">Password Salah!!</div>');
 					redirect('auth');
@@ -260,20 +261,19 @@ a {
 
 	public function logout()
 	{
-		$user = $this->db->get_where('pengguna', ['email' => $this->session->userdata('email')])->row_array();
+		$user = $this->db->get_where('user', ['email' => $this->session->userdata('email')])->row_array();
 		$last_login = [
-			'terakhir_login' => time(),
+			'is_online' => 0,
+			'last_login' => time(),
 		];
 
 		$this->db->set($last_login);
 		$this->db->where('email', $this->session->userdata('email'));
-		$this->db->update('pengguna');
+		$this->db->update('user');
 
-		$this->session->unset_userdata('nik');
-		$this->session->unset_userdata('id_pasien');
-		$this->session->unset_userdata('nama');
+		$this->session->unset_userdata('name');
 		$this->session->unset_userdata('email');
-		$this->session->unset_userdata('role');
+		$this->session->unset_userdata('role_id');
 
 		$this->session->set_flashdata('message', '<div class="alert alert-success" role="alert">Anda telah logout!</div>');
 		redirect('auth');

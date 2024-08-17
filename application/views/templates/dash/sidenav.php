@@ -1,4 +1,4 @@
-<div class="wrapper">
+<div class="wrapper sidebar_minimize">
     <!-- Sidebar -->
     <?php
 
@@ -13,7 +13,7 @@
     }
 
     ?>
-    <div class="sidebar" data-background-color="dark">
+    <div class="sidebar sidebar-style-2" data-background-color="dark">
         <div class="sidebar-logo">
             <!-- Logo Header -->
             <div class="logo-header" data-background-color="dark">
@@ -39,62 +39,62 @@
             <div class="sidebar-content">
                 <ul class="nav nav-secondary">
                     <?php
-                    if ($user->role == 1) {
-                        $nav = $this->db->order_by('order', 'ASC')->get_where('menu', [
-                            'status' => 1
-                        ])->result_array();
-                    } elseif ($user->role == 2) {
-                        $nav = $this->db->order_by('order', 'ASC')->get_where('menu', [
-                            'status' => 1,
-                            'for >=' => $user->role
-                        ])->result_array();
-                    } else {
-                        $nav = $this->db->order_by('order', 'ASC')->get_where('menu', [
-                            'status' => 1,
-                            'for' => 3
-                        ])->result_array();
-                    }
+                    $menu = $this->db
+                        ->order_by('order', 'ASC')
+                        ->join('user_access_menu', 'user_menu.id_menu = user_access_menu.menu_id', 'left')
+                        ->get_where('user_menu', [
+                            'user_menu.is_active' => '1',
+                            'user_access_menu.user_id' => $user->id_user,
+                        ])->result();
                     ?>
                     <!-- Nav Item - Dashboard -->
-                    <?php foreach ($nav as $n) : ?>
-                        <?php $submenu = $this->db->get_where('submenu', ['status' => 1, 'menu_id' => $n['id']]); ?>
+                    <?php foreach ($menu as $row) : ?>
+                        <?php
+                        $submenu = $this->db
+                            ->join('user_access_submenu', 'user_submenu.id_submenu = user_access_submenu.submenu_id', 'left')
+                            ->get_where('user_submenu', [
+                                'user_submenu.is_active' => "1",
+                                'user_submenu.menu_id' => $row->id_menu,
+                                'user_access_submenu.user_id' => $user->id_user,
+                            ]);
+                        ?>
                         <?php if ($submenu->num_rows() == 0) : ?>
-                            <?php if ($title == $n['menu']) : ?>
+                            <?php if ($title == $row->menu) : ?>
 
                                 <li class="nav-item active">
-                                    <a href="<?= base_url() . $n['link']; ?>">
-                                        <i class="bi <?= $n['icon']; ?>"></i>
+                                    <a href="<?= base_url() . $row->uri; ?>">
+                                        <i class="bi <?= $row->icon; ?>"></i>
 
                                     <?php else : ?>
                                 <li class="nav-item">
-                                    <a href="<?= base_url() . $n['link']; ?>">
-                                        <i class="bi <?= $n['icon']; ?>"></i>
+                                    <a href="<?= base_url() . $row->uri; ?>">
+                                        <i class="bi <?= $row->icon; ?>"></i>
                                     <?php endif; ?>
-                                    <p><?= $n['menu']; ?></p>
+                                    <p><?= $row->menu; ?></p>
                                     </a>
                                 <?php else : ?>
 
 
                                 <li class="nav-item">
-                                    <a data-bs-toggle="collapse" href="#menu<?= $n['id']; ?>" class="collapsed" aria-expanded="false">
-                                        <i class="fa <?= $n['icon']; ?>"></i>
-                                        <span><?= $n['menu']; ?></span>
+                                    <a data-bs-toggle="collapse" href="#menu<?= $row->id_menu; ?>" class="collapsed" aria-expanded="false">
+                                        <i class="fa <?= $row->icon; ?>"></i>
+                                        <span><?= $row->menu; ?></span>
                                         <span class="caret"></span>
                                     </a>
 
-                                    <div id="menu<?= $n['id']; ?>" class="collapse">
+                                    <div id="menu<?= $row->id_menu; ?>" class="collapse">
                                         <ul class="nav nav-collapse">
 
-                                            <?php foreach ($submenu->result_array() as $s) : ?>
-                                                <?php if ($this->uri->segment(2) == $s['url_ii']) : ?>
+                                            <?php foreach ($submenu->result() as $s) : ?>
+                                                <?php if ($this->uri->segment(2) == $s->uri2) : ?>
                                                     <li class="active">
-                                                        <a href="<?= base_url($s['url_i'] . $s['url_ii']); ?>">
-                                                            <span class=" sub-item"><?= $s['title']; ?></span>
+                                                        <a href="<?= base_url($s->uri1 . '/' . $s->uri2); ?>">
+                                                            <span class="sub-item"><?= $s->submenu; ?></span>
                                                         </a>
                                                     <?php else : ?>
                                                     <li>
-                                                        <a href="<?= base_url($s['url_i'] . $s['url_ii']); ?>">
-                                                            <span class="sub-item"><?= $s['title']; ?></span>
+                                                        <a href="<?= base_url($s->uri1 . '/' . $s->uri2); ?>">
+                                                            <span class="sub-item"><?= $s->submenu; ?></span>
                                                         </a>
                                                     <?php endif; ?>
                                                     </li>
@@ -137,53 +137,7 @@
             <!-- Navbar Header -->
             <nav class="navbar navbar-header navbar-header-transparent navbar-expand-lg border-bottom">
                 <div class="container-fluid">
-                    <?php
-                    $this->db->order_by('tgl_dibuat', 'DESC');
-                    $this->db->limit(5);
-                    $notif = $this->db->get('pengumuman'); ?>
-
                     <ul class="navbar-nav topbar-nav ms-md-auto align-items-center">
-                        <li class="nav-item topbar-icon dropdown hidden-caret">
-                            <a
-                                class="nav-link dropdown-toggle"
-                                href="#"
-                                id="notifDropdown"
-                                role="button"
-                                data-bs-toggle="dropdown"
-                                aria-haspopup="true"
-                                aria-expanded="false">
-                                <i class="fa fa-bell"></i>
-                                <span class="notification"><?= $notif->num_rows(); ?></span>
-                            </a>
-                            <ul
-                                class="dropdown-menu notif-box animated fadeIn"
-                                aria-labelledby="notifDropdown">
-                                <li>
-                                    <div class="dropdown-title">
-                                        <?= $notif->num_rows(); ?> Pengumuman
-                                    </div>
-                                </li>
-                                <?php foreach ($notif->result() as $row): ?>
-                                    <li>
-                                        <div class="notif-scroll scrollbar-outer">
-                                            <div class="notif-center">
-                                                <a href="#">
-                                                    <div class="notif-img">
-                                                        <i class="fas fa-info"></i>
-                                                    </div>
-                                                    <div class="notif-content" style="font-size: smaller !important;">
-                                                        <span class="block">
-                                                            <?= $row->deskripsi; ?>
-                                                        </span>
-                                                        <span class="time"><?= perbedaan_waktu($row->tgl_dibuat); ?> yang lalu</span>
-                                                    </div>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ul>
-                        </li>
                         <li class="nav-item topbar-user dropdown hidden-caret">
                             <a class="dropdown-toggle profile-pic" data-bs-toggle="dropdown" href="#" aria-expanded="false">
                                 <div class="avatar-sm">
@@ -191,7 +145,7 @@
                                 </div>
                                 <span class="profile-username">
                                     <span class="op-7">Hi,</span>
-                                    <span class="fw-bold"><?= $user->nama ?></span>
+                                    <span class="fw-bold"><?= $user->name ?></span>
                                 </span>
                             </a>
                             <ul class="dropdown-menu dropdown-user animated fadeIn">
@@ -202,7 +156,7 @@
                                                 <img src="<?= $fotoprofil ?>" alt="image profile" class="avatar-img rounded" />
                                             </div>
                                             <div class="u-text">
-                                                <h4><?= $user->nama ?></h4>
+                                                <h4><?= $user->name ?></h4>
                                                 <p class="text-muted"><?= sumput($user->email) ?></p>
                                                 <a href="<?= base_url('profil') ?>" class="btn btn-xs btn-secondary btn-sm">View Profile</a>
                                             </div>

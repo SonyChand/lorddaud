@@ -7,7 +7,7 @@ class Kurikulum extends CI_Controller
     public function __construct()
     {
         parent::__construct();
-        super();
+        check_user_access();
         date_default_timezone_set('Asia/Jakarta');
     }
 

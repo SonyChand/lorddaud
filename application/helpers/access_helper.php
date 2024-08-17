@@ -1,10 +1,74 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
+function check_user_access()
+{
+    $access = get_instance();
+    if (!$access->session->userdata('email')) {
+        redirect('auth');
+    } else {
+        $user = $access->db->get_where('user', ['email' => $access->session->userdata('email')])->row();
+        $uri = $access->uri->segment(1);
+        $uri2 = $access->uri->segment(2);
+
+        $menu = $access->db->get_where('user_menu', ['uri' => $uri])->row();
+
+        $userMenu = $access->db->get_where('user_access_menu', [
+            'user_id' => $user->id_user,
+            'menu_id' => $menu->id_menu
+        ]);
+        if ($userMenu->num_rows() == 0) {
+            redirect('auth/blocked');
+        }
+
+        if ($uri2 != null) {
+            $submenu = $access->db->get_where('user_submenu', [
+                'uri1' => $uri,
+                'uri2' => $uri2
+            ])->row();
+
+            if ($submenu == false) {
+                $userCrud = $access->db->get_where('user_crud_access', [
+                    'user_id' => $user->id_user,
+                    'menu_id' => $menu->id_menu,
+                    'uri' => $uri2,
+                ])->row();
+
+                $userCrudAccess = $access->db->get_where('user_crud_access', [
+                    'user_id' => $user->id_user,
+                    'menu_id' => $menu->id_menu,
+                    'submenu_id' => $userCrud->submenu_id,
+                    'uri' => $uri2,
+                ]);
+
+                $userSubmenu = $access->db->get_where('user_access_submenu', [
+                    'user_id' => $user->id_user,
+                    'menu_id' => $menu->id_menu,
+                    'submenu_id' => $userCrud->submenu_id
+                ]);
+
+                if ($userSubmenu->num_rows() == 0 || $userCrudAccess->num_rows() == 0) {
+                    redirect('auth/blocked');
+                }
+            } else {
+                $userSubmenu = $access->db->get_where('user_access_submenu', [
+                    'user_id' => $user->id_user,
+                    'menu_id' => $menu->id_menu,
+                    'submenu_id' => $submenu->id_submenu
+                ]);
+
+                if ($userSubmenu->num_rows() == 0) {
+                    redirect('auth/blocked');
+                }
+            }
+        }
+    }
+}
+
 function supreme()
 {
     $access = get_instance();
-    if (!$access->session->userdata('email') || $access->session->userdata('role') != 1) {
+    if (!$access->session->userdata('email') || $access->session->userdata('role_id') != 1) {
         redirect('dashboard');
     }
 }
@@ -12,7 +76,7 @@ function supreme()
 function super()
 {
     $access = get_instance();
-    if (!$access->session->userdata('email') || $access->session->userdata('role') > 2) {
+    if (!$access->session->userdata('email') || $access->session->userdata('role_id') > 2) {
         redirect('dashboard');
     }
 }
@@ -20,7 +84,7 @@ function super()
 function admin()
 {
     $access = get_instance();
-    if (!$access->session->userdata('email') || $access->session->userdata('role') > 3) {
+    if (!$access->session->userdata('email') || $access->session->userdata('role_id') > 3) {
         redirect('dashboard');
     }
 }
@@ -119,6 +183,207 @@ function maintain()
     }
 }
 
+function title($text)
+{
+    return preg_replace('/([A-Z])/', ' $1', $text);
+}
+
+function uriTitle()
+{
+    $access = get_instance();
+    $text = ucwords($access->uri->segment(1));
+    return $text;
+}
+
+function uriSubtitle()
+{
+    $access = get_instance();
+    $text = ucwords($access->uri->segment(2));
+    return $text;
+}
+
+function uri1()
+{
+    $access = get_instance();
+    $uri = ucwords($access->uri->segment(1));
+    return $uri;
+}
+
+function uri2()
+{
+    $access = get_instance();
+    $uri = ucwords($access->uri->segment(2));
+    return $uri;
+}
+
+function getAddCrudAccess()
+{
+    $access = get_instance();
+    if (!$access->session->userdata('email')) {
+        redirect('auth');
+    } else {
+        $user = $access->db->get_where('user', ['email' => $access->session->userdata('email')])->row();
+        $uri = $access->uri->segment(1);
+        $uri2 = $access->uri->segment(2);
+
+        $menu = $access->db->get_where('user_menu', ['uri' => $uri])->row();
+
+        $userMenu = $access->db->get_where('user_access_menu', [
+            'user_id' => $user->id_user,
+            'menu_id' => $menu->id_menu
+        ]);
+
+        if ($userMenu->num_rows() == 0) {
+            redirect('auth/blocked');
+        }
+
+        if ($uri2 != null) {
+            $submenu = $access->db->get_where('user_submenu', [
+                'uri1' => $uri,
+                'uri2' => $uri2
+            ])->row();
+
+
+
+            if ($submenu == true) {
+                $userCrudAccess = $access->db->get_where('user_crud_access', [
+                    'user_id' => $user->id_user,
+                    'menu_id' => $menu->id_menu,
+                    'submenu_id' => $submenu->id_submenu,
+                    'action' => 'add',
+                ]);
+            }
+        }
+        return $userCrudAccess->num_rows();
+    }
+}
+
+function getEditCrudAccess()
+{
+    $access = get_instance();
+    if (!$access->session->userdata('email')) {
+        redirect('auth');
+    } else {
+        $user = $access->db->get_where('user', ['email' => $access->session->userdata('email')])->row();
+        $uri = $access->uri->segment(1);
+        $uri2 = $access->uri->segment(2);
+
+        $menu = $access->db->get_where('user_menu', ['uri' => $uri])->row();
+
+        $userMenu = $access->db->get_where('user_access_menu', [
+            'user_id' => $user->id_user,
+            'menu_id' => $menu->id_menu
+        ]);
+
+        if ($userMenu->num_rows() == 0) {
+            redirect('auth/blocked');
+        }
+
+        if ($uri2 != null) {
+            $submenu = $access->db->get_where('user_submenu', [
+                'uri1' => $uri,
+                'uri2' => $uri2
+            ])->row();
+
+
+
+            if ($submenu == true) {
+                $userCrudAccess = $access->db->get_where('user_crud_access', [
+                    'user_id' => $user->id_user,
+                    'menu_id' => $menu->id_menu,
+                    'submenu_id' => $submenu->id_submenu,
+                    'action' => 'edit',
+                ]);
+            }
+        }
+        return $userCrudAccess->num_rows();
+    }
+}
+
+function getDeleteCrudAccess()
+{
+    $access = get_instance();
+    if (!$access->session->userdata('email')) {
+        redirect('auth');
+    } else {
+        $user = $access->db->get_where('user', ['email' => $access->session->userdata('email')])->row();
+        $uri = $access->uri->segment(1);
+        $uri2 = $access->uri->segment(2);
+
+        $menu = $access->db->get_where('user_menu', ['uri' => $uri])->row();
+
+        $userMenu = $access->db->get_where('user_access_menu', [
+            'user_id' => $user->id_user,
+            'menu_id' => $menu->id_menu
+        ]);
+
+        if ($userMenu->num_rows() == 0) {
+            redirect('auth/blocked');
+        }
+
+        if ($uri2 != null) {
+            $submenu = $access->db->get_where('user_submenu', [
+                'uri1' => $uri,
+                'uri2' => $uri2
+            ])->row();
+
+
+
+            if ($submenu == true) {
+                $userCrudAccess = $access->db->get_where('user_crud_access', [
+                    'user_id' => $user->id_user,
+                    'menu_id' => $menu->id_menu,
+                    'submenu_id' => $submenu->id_submenu,
+                    'action' => 'delete',
+                ]);
+            }
+        }
+        return $userCrudAccess->num_rows();
+    }
+}
+
+function getDownloadCrudAccess()
+{
+    $access = get_instance();
+    if (!$access->session->userdata('email')) {
+        redirect('auth');
+    } else {
+        $user = $access->db->get_where('user', ['email' => $access->session->userdata('email')])->row();
+        $uri = $access->uri->segment(1);
+        $uri2 = $access->uri->segment(2);
+
+        $menu = $access->db->get_where('user_menu', ['uri' => $uri])->row();
+
+        $userMenu = $access->db->get_where('user_access_menu', [
+            'user_id' => $user->id_user,
+            'menu_id' => $menu->id_menu
+        ]);
+
+        if ($userMenu->num_rows() == 0) {
+            redirect('auth/blocked');
+        }
+
+        if ($uri2 != null) {
+            $submenu = $access->db->get_where('user_submenu', [
+                'uri1' => $uri,
+                'uri2' => $uri2
+            ])->row();
+
+
+
+            if ($submenu == true) {
+                $userCrudAccess = $access->db->get_where('user_crud_access', [
+                    'user_id' => $user->id_user,
+                    'menu_id' => $menu->id_menu,
+                    'submenu_id' => $submenu->id_submenu,
+                    'action' => 'download',
+                ]);
+            }
+        }
+        return $userCrudAccess->num_rows();
+    }
+}
+
 function terbilang($nilai)
 {
     if ($nilai < 0) {
@@ -193,7 +458,7 @@ function token($email, $tanggalSekarang)
     $code = $initial . $randomChar . $randomTgl;
     $kode = substr(str_shuffle(md5($code)), 0, 8);
 
-    $query = $access->db->get_where('token_pengguna', ['token' => $kode, 'email' => $email]);
+    $query = $access->db->get_where('user_token', ['token' => $kode, 'email' => $email]);
     if ($query->num_rows > 0) {
         return token($email, $tanggalSekarang);
     } else {
